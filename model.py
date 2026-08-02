@@ -1,4 +1,4 @@
-"""Model: contacts, phone book rules, and JSON persistence."""
+"""Модель: контакты, логика справочника и хранение данных в JSON."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from exceptions import (
 
 @dataclass
 class Contact:
-    """A single phone book entry."""
+    """Одна запись телефонного справочника."""
 
     contact_id: int
     name: str
@@ -70,7 +70,7 @@ class Contact:
 
 
 class PhoneBook:
-    """A collection of contacts and operations on it."""
+    """Коллекция контактов и операции над ней."""
 
     def __init__(self, contacts: Iterable[Contact] | None = None) -> None:
         self._contacts = list(contacts or [])
@@ -150,7 +150,7 @@ class PhoneBook:
 
 
 class FileReader:
-    """Reads contacts from a JSON file."""
+    """Читает контакты из JSON-файла."""
 
     def __init__(self, file_path: str | Path) -> None:
         self.file_path = Path(file_path)
@@ -172,7 +172,7 @@ class FileReader:
 
 
 class FileWriter:
-    """Writes contacts to a JSON file."""
+    """Записывает контакты в JSON-файл."""
 
     def __init__(self, file_path: str | Path) -> None:
         self.file_path = Path(file_path)

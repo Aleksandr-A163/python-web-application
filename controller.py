@@ -1,4 +1,4 @@
-"""Controller: coordinates the model and console view."""
+"""Контроллер: связывает модель и консольное представление."""
 
 from exceptions import PhoneBookError, ValidationError
 from model import FileReader, FileWriter, PhoneBook

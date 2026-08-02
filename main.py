@@ -1,4 +1,4 @@
-"""Application entry point."""
+"""Точка входа в приложение."""
 
 from controller import PhoneBookController
 from exceptions import PhoneBookError

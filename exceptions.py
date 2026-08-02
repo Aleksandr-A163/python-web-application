@@ -1,29 +1,29 @@
-"""Custom exceptions used by the phone book application."""
+"""Пользовательские исключения телефонного справочника."""
 
 
 class PhoneBookError(Exception):
-    """Base class for expected application errors."""
+    """Базовый класс ожидаемых ошибок приложения."""
 
 
 class ValidationError(PhoneBookError):
-    """Raised when contact data is invalid."""
+    """Ошибка некорректных данных контакта."""
 
 
 class ContactNotFoundError(PhoneBookError):
-    """Raised when a contact with the requested ID does not exist."""
+    """Ошибка отсутствия контакта с указанным ID."""
 
 
 class StorageError(PhoneBookError):
-    """Base class for file storage errors."""
+    """Базовый класс ошибок файлового хранилища."""
 
 
 class FileReadError(StorageError):
-    """Raised when contacts cannot be read from a file."""
+    """Ошибка чтения контактов из файла."""
 
 
 class FileWriteError(StorageError):
-    """Raised when contacts cannot be written to a file."""
+    """Ошибка записи контактов в файл."""
 
 
 class InvalidDataFormatError(FileReadError):
-    """Raised when the contacts file has an invalid structure."""
+    """Ошибка некорректной структуры файла контактов."""

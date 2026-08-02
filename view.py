@@ -1,4 +1,4 @@
-"""View: all console input and output."""
+"""Представление: весь консольный ввод и вывод."""
 
 from collections.abc import Iterable
 
