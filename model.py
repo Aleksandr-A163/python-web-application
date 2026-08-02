@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
+from functools import lru_cache
+from itertools import groupby
 from pathlib import Path
-from typing import Iterable
+from typing import Callable, Iterable
 
 from exceptions import (
     ContactNotFoundError,
@@ -24,6 +27,8 @@ class Contact:
     name: str
     phone: str
     comment: str = ""
+    created_at: datetime = field(default_factory=datetime.now)
+    updated_at: datetime = field(default_factory=datetime.now)
 
     def __post_init__(self) -> None:
         try:
@@ -34,6 +39,11 @@ class Contact:
         self.name = str(self.name).strip()
         self.phone = str(self.phone).strip()
         self.comment = str(self.comment).strip()
+
+        if not isinstance(self.created_at, datetime):
+            raise ValidationError("Дата создания контакта имеет неверный формат.")
+        if not isinstance(self.updated_at, datetime):
+            raise ValidationError("Дата изменения контакта имеет неверный формат.")
 
         if self.contact_id < 1:
             raise ValidationError("ID контакта должен быть положительным числом.")
@@ -48,6 +58,8 @@ class Contact:
             "name": self.name,
             "phone": self.phone,
             "comment": self.comment,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
         }
 
     @classmethod
@@ -55,11 +67,19 @@ class Contact:
         if not isinstance(data, dict):
             raise InvalidDataFormatError("Контакт должен быть объектом JSON.")
         try:
+            created_at = cls._parse_datetime(data.get("created_at"))
+            updated_at = cls._parse_datetime(data.get("updated_at"))
+            if created_at is None:
+                created_at = datetime.now()
+            if updated_at is None:
+                updated_at = created_at
             return cls(
                 contact_id=data["id"],
                 name=data["name"],
                 phone=data["phone"],
                 comment=data.get("comment", ""),
+                created_at=created_at,
+                updated_at=updated_at,
             )
         except KeyError as error:
             raise InvalidDataFormatError(
@@ -68,12 +88,31 @@ class Contact:
         except ValidationError as error:
             raise InvalidDataFormatError(str(error)) from error
 
+    @staticmethod
+    def _parse_datetime(value: object) -> datetime | None:
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            raise InvalidDataFormatError("Дата контакта должна быть строкой.")
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError as error:
+            raise InvalidDataFormatError(
+                f"Дата контакта имеет неверный формат: {value}."
+            ) from error
+
 
 class PhoneBook:
     """Коллекция контактов и операции над ней."""
 
-    def __init__(self, contacts: Iterable[Contact] | None = None) -> None:
+    def __init__(
+        self,
+        contacts: Iterable[Contact] | None = None,
+        clock: Callable[[], datetime] = datetime.now,
+    ) -> None:
         self._contacts = list(contacts or [])
+        self._clock = clock
+        self.clear_search_cache()
         ids = [contact.contact_id for contact in self._contacts]
         if len(ids) != len(set(ids)):
             raise InvalidDataFormatError("В файле обнаружены повторяющиеся ID.")
@@ -83,12 +122,22 @@ class PhoneBook:
         return tuple(self._contacts)
 
     def replace_all(self, contacts: Iterable[Contact]) -> None:
-        replacement = PhoneBook(contacts)
+        replacement = PhoneBook(contacts, clock=self._clock)
         self._contacts = list(replacement.contacts)
+        self.clear_search_cache()
 
     def add_contact(self, name: str, phone: str, comment: str = "") -> Contact:
-        contact = Contact(self._get_next_id(), name, phone, comment)
+        now = self._clock()
+        contact = Contact(
+            self._get_next_id(),
+            name,
+            phone,
+            comment,
+            created_at=now,
+            updated_at=now,
+        )
         self._contacts.append(contact)
+        self.clear_search_cache()
         return contact
 
     def find_contacts(self, query: str) -> list[Contact]:
@@ -96,7 +145,11 @@ class PhoneBook:
         if not normalized:
             raise ValidationError("Строка поиска не должна быть пустой.")
 
-        return [
+        return list(self._cached_find(normalized))
+
+    @lru_cache(maxsize=128)
+    def _cached_find(self, normalized: str) -> tuple[Contact, ...]:
+        return tuple(
             contact
             for contact in self._contacts
             if any(
@@ -108,7 +161,28 @@ class PhoneBook:
                     contact.comment,
                 )
             )
-        ]
+        )
+
+    def clear_search_cache(self) -> None:
+        self._cached_find.cache_clear()
+
+    def search_cache_info(self):
+        """Возвращает статистику кэша поиска для диагностики и тестов."""
+
+        return self._cached_find.cache_info()
+
+    def group_by_first_letter(self) -> dict[str, tuple[Contact, ...]]:
+        sorted_contacts = sorted(
+            self._contacts,
+            key=lambda contact: contact.name.casefold(),
+        )
+        return {
+            letter: tuple(contacts)
+            for letter, contacts in groupby(
+                sorted_contacts,
+                key=lambda contact: contact.name[0].upper(),
+            )
+        }
 
     def get_by_id(self, contact_id: int) -> Contact:
         try:
@@ -134,15 +208,20 @@ class PhoneBook:
             current.name if name is None else name,
             current.phone if phone is None else phone,
             current.comment if comment is None else comment,
+            created_at=current.created_at,
+            updated_at=self._clock(),
         )
         current.name = updated.name
         current.phone = updated.phone
         current.comment = updated.comment
+        current.updated_at = updated.updated_at
+        self.clear_search_cache()
         return current
 
     def delete_contact(self, contact_id: int) -> Contact:
         contact = self.get_by_id(contact_id)
         self._contacts.remove(contact)
+        self.clear_search_cache()
         return contact
 
     def _get_next_id(self) -> int:

@@ -1,6 +1,7 @@
 """Контроллер: связывает модель и консольное представление."""
 
 from exceptions import PhoneBookError, ValidationError
+from generator import ContactGenerator
 from model import FileReader, FileWriter, PhoneBook
 from view import ConsoleView
 
@@ -12,11 +13,13 @@ class PhoneBookController:
         reader: FileReader,
         writer: FileWriter,
         view: ConsoleView,
+        generator: ContactGenerator | None = None,
     ) -> None:
         self.phonebook = phonebook
         self.reader = reader
         self.writer = writer
         self.view = view
+        self.generator = generator or ContactGenerator()
         self.has_changes = False
 
     def run(self) -> None:
@@ -28,11 +31,13 @@ class PhoneBookController:
             "5": self.find_contact,
             "6": self.update_contact,
             "7": self.delete_contact,
+            "8": self.show_grouped_contacts,
+            "9": self.generate_test_contacts,
         }
         while True:
             self.view.show_menu()
             choice = self.view.read("Выберите действие: ")
-            if choice == "8":
+            if choice == "10":
                 if self.exit_app():
                     return
                 continue
@@ -95,6 +100,32 @@ class PhoneBookController:
         contact = self.phonebook.delete_contact(self._read_contact_id())
         self.has_changes = True
         self.view.show_message(f"Контакт «{contact.name}» удалён.")
+
+    def show_grouped_contacts(self) -> None:
+        self.view.show_grouped_contacts(self.phonebook.group_by_first_letter())
+
+    def generate_test_contacts(self) -> None:
+        value = self.view.read("Введите количество тестовых контактов: ")
+        try:
+            count = int(value)
+        except ValueError as error:
+            raise ValidationError(
+                "Количество контактов должно быть целым числом."
+            ) from error
+        if count < 1:
+            raise ValidationError(
+                "Количество контактов должно быть положительным числом."
+            )
+
+        generated = self.generator.generate_contacts(count)
+        for contact in generated:
+            self.phonebook.add_contact(
+                contact.name,
+                contact.phone,
+                contact.comment,
+            )
+        self.has_changes = True
+        self.view.show_message(f"Создано тестовых контактов: {count}.")
 
     def exit_app(self) -> bool:
         if self.has_changes and self.view.confirm(

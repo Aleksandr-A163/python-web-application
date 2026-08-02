@@ -15,7 +15,9 @@ class ConsoleView:
 5. Найти контакт
 6. Изменить контакт
 7. Удалить контакт
-8. Выход
+8. Показать контакты по группам
+9. Создать тестовые контакты
+10. Выход
 """
 
     def show_menu(self) -> None:
@@ -38,8 +40,25 @@ class ConsoleView:
         for contact in contacts:
             print(
                 f"ID: {contact.contact_id} | Имя: {contact.name} | "
-                f"Телефон: {contact.phone} | Комментарий: {contact.comment}"
+                f"Телефон: {contact.phone} | Комментарий: {contact.comment} | "
+                f"Создан: {self._format_datetime(contact.created_at)} | "
+                f"Изменён: {self._format_datetime(contact.updated_at)}"
             )
+
+    def show_grouped_contacts(
+        self,
+        groups: dict[str, tuple[Contact, ...]],
+    ) -> None:
+        if not groups:
+            self.show_message("Контакты не найдены.")
+            return
+        for letter, contacts in groups.items():
+            print(f"\n{letter}")
+            self.show_contacts(contacts)
 
     def confirm(self, prompt: str) -> bool:
         return self.read(f"{prompt} (д/н): ").lower() in {"д", "да", "y", "yes"}
+
+    @staticmethod
+    def _format_datetime(value) -> str:
+        return value.strftime("%d.%m.%Y %H:%M:%S")
