@@ -1,12 +1,13 @@
 """Представление: весь консольный ввод и вывод."""
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
+from datetime import datetime
 
 from model import Contact
 
 
 class ConsoleView:
-    MENU = """
+    MENU: str = """
 Телефонный справочник
 1. Открыть файл
 2. Сохранить файл
@@ -47,7 +48,7 @@ class ConsoleView:
 
     def show_grouped_contacts(
         self,
-        groups: dict[str, tuple[Contact, ...]],
+        groups: Mapping[str, tuple[Contact, ...]],
     ) -> None:
         if not groups:
             self.show_message("Контакты не найдены.")
@@ -60,5 +61,5 @@ class ConsoleView:
         return self.read(f"{prompt} (д/н): ").lower() in {"д", "да", "y", "yes"}
 
     @staticmethod
-    def _format_datetime(value) -> str:
+    def _format_datetime(value: datetime) -> str:
         return value.strftime("%d.%m.%Y %H:%M:%S")

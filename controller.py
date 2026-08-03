@@ -1,5 +1,7 @@
 """Контроллер: связывает модель и консольное представление."""
 
+from collections.abc import Callable
+
 from exceptions import PhoneBookError, ValidationError
 from generator import ContactGenerator
 from model import FileReader, FileWriter, PhoneBook
@@ -20,10 +22,11 @@ class PhoneBookController:
         self.writer = writer
         self.view = view
         self.generator = generator or ContactGenerator()
-        self.has_changes = False
+        self.has_changes: bool = False
+        self._is_running: bool = False
 
     def run(self) -> None:
-        actions = {
+        actions: dict[str, Callable[[], None]] = {
             "1": self.open_file,
             "2": self.save_file,
             "3": self.show_contacts,
@@ -34,12 +37,12 @@ class PhoneBookController:
             "8": self.show_grouped_contacts,
             "9": self.generate_test_contacts,
         }
-        while True:
+        self._is_running = True
+        while self._is_running:
             self.view.show_menu()
             choice = self.view.read("Выберите действие: ")
             if choice == "10":
-                if self.exit_app():
-                    return
+                self.exit_app()
                 continue
             action = actions.get(choice)
             if action is None:
@@ -127,7 +130,7 @@ class PhoneBookController:
         self.has_changes = True
         self.view.show_message(f"Создано тестовых контактов: {count}.")
 
-    def exit_app(self) -> bool:
+    def exit_app(self) -> None:
         if self.has_changes and self.view.confirm(
             "Есть несохранённые изменения. Сохранить?"
         ):
@@ -135,9 +138,9 @@ class PhoneBookController:
                 self.save_file()
             except PhoneBookError as error:
                 self.view.show_error(str(error))
-                return False
+                return
         self.view.show_message("Выход.")
-        return True
+        self._is_running = False
 
     def _read_contact_id(self) -> int:
         value = self.view.read("Введите ID контакта: ")

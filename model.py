@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 from functools import lru_cache
 from itertools import groupby
 from pathlib import Path
-from typing import Callable, Iterable
+from typing import NamedTuple, TypeAlias
 
 from exceptions import (
     ContactNotFoundError,
@@ -52,7 +53,7 @@ class Contact:
         if not self.phone:
             raise ValidationError("Телефон контакта не должен быть пустым.")
 
-    def to_dict(self) -> dict[str, int | str]:
+    def to_dict(self) -> ContactData:
         return {
             "id": self.contact_id,
             "name": self.name,
@@ -74,16 +75,20 @@ class Contact:
             if updated_at is None:
                 updated_at = created_at
             return cls(
-                contact_id=data["id"],
-                name=data["name"],
-                phone=data["phone"],
-                comment=data.get("comment", ""),
+                contact_id=int(data["id"]),
+                name=str(data["name"]),
+                phone=str(data["phone"]),
+                comment=str(data.get("comment", "")),
                 created_at=created_at,
                 updated_at=updated_at,
             )
         except KeyError as error:
             raise InvalidDataFormatError(
                 f"В контакте отсутствует обязательное поле: {error.args[0]}."
+            ) from error
+        except (TypeError, ValueError) as error:
+            raise InvalidDataFormatError(
+                "Поля контакта имеют неверные типы данных."
             ) from error
         except ValidationError as error:
             raise InvalidDataFormatError(str(error)) from error
@@ -100,6 +105,19 @@ class Contact:
             raise InvalidDataFormatError(
                 f"Дата контакта имеет неверный формат: {value}."
             ) from error
+
+
+ContactData: TypeAlias = dict[str, int | str]
+ContactGroups: TypeAlias = dict[str, tuple[Contact, ...]]
+
+
+class SearchCacheInfo(NamedTuple):
+    """Типизированная статистика кэша поиска."""
+
+    hits: int
+    misses: int
+    maxsize: int | None
+    currsize: int
 
 
 class PhoneBook:
@@ -166,12 +184,18 @@ class PhoneBook:
     def clear_search_cache(self) -> None:
         self._cached_find.cache_clear()
 
-    def search_cache_info(self):
+    def search_cache_info(self) -> SearchCacheInfo:
         """Возвращает статистику кэша поиска для диагностики и тестов."""
 
-        return self._cached_find.cache_info()
+        info = self._cached_find.cache_info()
+        return SearchCacheInfo(
+            hits=info.hits,
+            misses=info.misses,
+            maxsize=info.maxsize,
+            currsize=info.currsize,
+        )
 
-    def group_by_first_letter(self) -> dict[str, tuple[Contact, ...]]:
+    def group_by_first_letter(self) -> ContactGroups:
         sorted_contacts = sorted(
             self._contacts,
             key=lambda contact: contact.name.casefold(),
@@ -232,7 +256,7 @@ class FileReader:
     """Читает контакты из JSON-файла."""
 
     def __init__(self, file_path: str | Path) -> None:
-        self.file_path = Path(file_path)
+        self.file_path: Path = Path(file_path)
 
     def read(self) -> list[Contact]:
         if not self.file_path.exists():
@@ -254,7 +278,7 @@ class FileWriter:
     """Записывает контакты в JSON-файл."""
 
     def __init__(self, file_path: str | Path) -> None:
-        self.file_path = Path(file_path)
+        self.file_path: Path = Path(file_path)
 
     def write(self, contacts: Iterable[Contact]) -> None:
         try:

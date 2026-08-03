@@ -8,7 +8,7 @@ from model import Contact
 class ContactGenerator:
     """Создаёт воспроизводимые случайные тестовые данные."""
 
-    NAMES = (
+    NAMES: tuple[str, ...] = (
         "Александр",
         "Анна",
         "Виктор",
@@ -18,10 +18,16 @@ class ContactGenerator:
         "Николай",
         "Ольга",
     )
-    COMMENTS = ("друг", "работа", "семья", "учёба", "тестовый контакт")
+    COMMENTS: tuple[str, ...] = (
+        "друг",
+        "работа",
+        "семья",
+        "учёба",
+        "тестовый контакт",
+    )
 
     def __init__(self, seed: int | None = None) -> None:
-        self._random = random.Random(seed)
+        self._random: random.Random = random.Random(seed)
 
     def generate_phone(self) -> str:
         return "+79" + "".join(

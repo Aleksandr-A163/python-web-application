@@ -1,12 +1,15 @@
 import json
 import tempfile
 import unittest
+from collections.abc import Iterator
 from datetime import datetime, timedelta
 from pathlib import Path
 
 from exceptions import ContactNotFoundError, InvalidDataFormatError, ValidationError
+from controller import PhoneBookController
 from generator import ContactGenerator
 from model import Contact, FileReader, FileWriter, PhoneBook
+from view import ConsoleView
 
 
 class SequenceClock:
@@ -17,13 +20,31 @@ class SequenceClock:
         return next(self._values)
 
 
+class StubView(ConsoleView):
+    def __init__(self, inputs: list[str]) -> None:
+        self._inputs: Iterator[str] = iter(inputs)
+        self.messages: list[str] = []
+
+    def show_menu(self) -> None:
+        pass
+
+    def read(self, prompt: str) -> str:
+        return next(self._inputs)
+
+    def show_message(self, message: str) -> None:
+        self.messages.append(message)
+
+    def show_error(self, message: str) -> None:
+        self.messages.append(f"Ошибка: {message}")
+
+
 class PhoneBookTest(unittest.TestCase):
-    def test_add_contact_sets_next_id(self):
+    def test_add_contact_sets_next_id(self) -> None:
         phonebook = PhoneBook([Contact(3, "Иван", "+79990000001")])
         contact = phonebook.add_contact("Анна", "+79990000002")
         self.assertEqual(contact.contact_id, 4)
 
-    def test_new_contact_gets_creation_and_update_dates(self):
+    def test_new_contact_gets_creation_and_update_dates(self) -> None:
         now = datetime(2026, 8, 2, 12, 30)
         contact = PhoneBook(clock=lambda: now).add_contact(
             "Иван", "+79990000001"
@@ -31,7 +52,7 @@ class PhoneBookTest(unittest.TestCase):
         self.assertEqual(contact.created_at, now)
         self.assertEqual(contact.updated_at, now)
 
-    def test_update_changes_updated_at_but_preserves_created_at(self):
+    def test_update_changes_updated_at_but_preserves_created_at(self) -> None:
         created_at = datetime(2026, 8, 2, 12, 30)
         updated_at = created_at + timedelta(hours=1)
         phonebook = PhoneBook(clock=SequenceClock(created_at, updated_at))
@@ -42,14 +63,14 @@ class PhoneBookTest(unittest.TestCase):
         self.assertEqual(contact.created_at, created_at)
         self.assertEqual(contact.updated_at, updated_at)
 
-    def test_find_contacts_searches_all_fields(self):
+    def test_find_contacts_searches_all_fields(self) -> None:
         phonebook = PhoneBook()
         phonebook.add_contact("Иван", "+79990000001", "друг")
         phonebook.add_contact("Анна", "+79990000002", "работа")
         result = phonebook.find_contacts("РАБОТА")
         self.assertEqual([contact.name for contact in result], ["Анна"])
 
-    def test_repeated_search_uses_cache(self):
+    def test_repeated_search_uses_cache(self) -> None:
         phonebook = PhoneBook()
         phonebook.add_contact("Иван", "+79990000001")
 
@@ -61,7 +82,7 @@ class PhoneBookTest(unittest.TestCase):
         self.assertEqual(after_first_search.misses, 1)
         self.assertEqual(after_second_search.hits, 1)
 
-    def test_mutations_clear_search_cache(self):
+    def test_mutations_clear_search_cache(self) -> None:
         phonebook = PhoneBook()
         first = phonebook.add_contact("Иван", "+79990000001")
 
@@ -77,7 +98,7 @@ class PhoneBookTest(unittest.TestCase):
         phonebook.delete_contact(first.contact_id)
         self.assertEqual(phonebook.search_cache_info().currsize, 0)
 
-    def test_grouping_sorts_contacts_and_uses_first_letter(self):
+    def test_grouping_sorts_contacts_and_uses_first_letter(self) -> None:
         phonebook = PhoneBook()
         phonebook.add_contact("Ирина", "+79990000001")
         phonebook.add_contact("Анна", "+79990000002")
@@ -96,15 +117,15 @@ class PhoneBookTest(unittest.TestCase):
             ["Иван", "Ирина"],
         )
 
-    def test_empty_name_is_rejected(self):
+    def test_empty_name_is_rejected(self) -> None:
         with self.assertRaises(ValidationError):
             PhoneBook().add_contact("  ", "+79990000001")
 
-    def test_missing_contact_raises_custom_exception(self):
+    def test_missing_contact_raises_custom_exception(self) -> None:
         with self.assertRaises(ContactNotFoundError):
             PhoneBook().delete_contact(100)
 
-    def test_update_and_delete_existing_contact(self):
+    def test_update_and_delete_existing_contact(self) -> None:
         phonebook = PhoneBook()
         contact = phonebook.add_contact("Иван", "+79990000001")
         updated = phonebook.update_contact(contact.contact_id, comment="друг")
@@ -115,7 +136,7 @@ class PhoneBookTest(unittest.TestCase):
 
 
 class StorageTest(unittest.TestCase):
-    def test_contacts_without_dates_are_loaded(self):
+    def test_contacts_without_dates_are_loaded(self) -> None:
         old_data = [
             {
                 "id": 1,
@@ -132,7 +153,7 @@ class StorageTest(unittest.TestCase):
         self.assertIsInstance(contact.created_at, datetime)
         self.assertEqual(contact.updated_at, contact.created_at)
 
-    def test_dates_survive_write_and_read_without_data_loss(self):
+    def test_dates_survive_write_and_read_without_data_loss(self) -> None:
         created_at = datetime(2026, 8, 2, 12, 30, 15, 123456)
         updated_at = datetime(2026, 8, 3, 9, 45, 10, 654321)
         contacts = [
@@ -154,7 +175,7 @@ class StorageTest(unittest.TestCase):
         self.assertEqual(loaded[0].created_at, created_at)
         self.assertEqual(loaded[0].updated_at, updated_at)
 
-    def test_reader_rejects_invalid_json_structure(self):
+    def test_reader_rejects_invalid_json_structure(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "contacts.json"
             path.write_text(json.dumps({"name": "Иван"}), encoding="utf-8")
@@ -163,21 +184,41 @@ class StorageTest(unittest.TestCase):
 
 
 class ContactGeneratorTest(unittest.TestCase):
-    def test_generator_creates_requested_number_of_valid_contacts(self):
+    def test_generator_creates_requested_number_of_valid_contacts(self) -> None:
         contacts = ContactGenerator(seed=42).generate_contacts(5)
         self.assertEqual(len(contacts), 5)
         self.assertEqual([contact.contact_id for contact in contacts], [1, 2, 3, 4, 5])
         self.assertTrue(all(contact.name and contact.phone for contact in contacts))
 
-    def test_fixed_seed_is_reproducible(self):
+    def test_fixed_seed_is_reproducible(self) -> None:
         first = ContactGenerator(seed=42).generate_contacts(3)
         second = ContactGenerator(seed=42).generate_contacts(3)
 
-        fields = lambda contacts: [
+        def fields(contacts: list[Contact]) -> list[tuple[int, str, str, str]]:
+            return [
             (contact.contact_id, contact.name, contact.phone, contact.comment)
             for contact in contacts
-        ]
+            ]
+
         self.assertEqual(fields(first), fields(second))
+
+
+class ControllerTest(unittest.TestCase):
+    def test_run_stops_when_exit_condition_is_set(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "contacts.json"
+            view = StubView(["10"])
+            controller = PhoneBookController(
+                phonebook=PhoneBook(),
+                reader=FileReader(path),
+                writer=FileWriter(path),
+                view=view,
+            )
+
+            controller.run()
+
+        self.assertFalse(controller._is_running)
+        self.assertIn("Выход.", view.messages)
 
 
 if __name__ == "__main__":
