@@ -120,7 +120,7 @@ python-phonebook-tests/
 ├── main.py                 # точка входа
 ├── model.py                # контакты, справочник и файловый слой
 ├── view.py                 # консольное представление
-├── pytest.ini              # настройки поиска тестов
+├── pyproject.toml          # настройки pytest
 └── requirements-dev.txt    # pytest и pytest-cov
 ```
 
