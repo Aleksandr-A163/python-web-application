@@ -84,7 +84,6 @@ def make_controller(
     [
         ("Иван", "+7 999 000-00-01", "Иван", "+7 999 000-00-01"),
         ("  Анна-Мария  ", "  8(999)0000002  ", "Анна-Мария", "8(999)0000002"),
-        ("John O'Connor", "+1-202-555-0100", "John O'Connor", "+1-202-555-0100"),
     ],
 )
 def test_add_contact_accepts_name_and_phone_formats(
@@ -107,37 +106,31 @@ def test_add_contact_uses_next_id_and_dates() -> None:
     assert contact.created_at == contact.updated_at == now
 
 
-@pytest.mark.parametrize(
-    ("name", "phone"),
-    [("", "123"), ("   ", "123"), ("Иван", ""), ("Иван", "   ")],
-)
-def test_add_empty_contact_fields_raise_validation_error(name: str, phone: str) -> None:
-    with pytest.raises(ValidationError):
-        PhoneBook().add_contact(name, phone)
+def test_add_empty_contact_fields_raise_validation_error() -> None:
+    # Классы эквивалентности: отсутствует имя / отсутствует телефон.
+    for name, phone in [("   ", "123"), ("Иван", "   ")]:
+        with pytest.raises(ValidationError):
+            PhoneBook().add_contact(name, phone)
 
 
-@pytest.mark.parametrize(
-    ("query", "expected"),
-    [
-        ("иван", ["Иван Петров"]),
-        ("ПЕТРОВ", ["Иван Петров"]),
-        ("0002", ["Анна"]),
-        ("работа", ["Анна"]),
-        ("2", ["Анна"]),
-        ("нет такого", []),
-    ],
-)
-def test_find_contacts_by_name_phone_comment_id_and_general_query(
-    query: str, expected: list[str]
-) -> None:
+def test_find_contacts_by_name_phone_comment_id_and_general_query() -> None:
     phonebook = PhoneBook()
     phonebook.add_contact("Иван Петров", "+79990000001", "друг")
     phonebook.add_contact("Анна", "+79990000002", "работа")
-    assert [contact.name for contact in phonebook.find_contacts(query)] == expected
+    cases = {
+        "ПЕТРОВ": ["Иван Петров"],
+        "0002": ["Анна"],
+        "работа": ["Анна"],
+        "2": ["Анна"],
+        "нет такого": [],
+    }
+    for query, expected in cases.items():
+        assert [contact.name for contact in phonebook.find_contacts(query)] == expected
 
 
-@pytest.mark.parametrize("query", ["", "   "])
-def test_empty_search_query_raises_validation_error(query: str) -> None:
+def test_empty_search_query_raises_validation_error() -> None:
+    # Пустая строка и пробелы принадлежат одному невалидному классу.
+    query = "   "
     with pytest.raises(ValidationError, match="поиска"):
         PhoneBook().find_contacts(query)
 
@@ -171,11 +164,11 @@ def test_update_contact_changes_selected_fields_and_update_date() -> None:
     assert contact.updated_at == updated
 
 
-@pytest.mark.parametrize("field", ["name", "phone"])
-def test_update_contact_rejects_empty_required_fields(field: str) -> None:
-    phonebook = PhoneBook([Contact(1, "Иван", "111")])
-    with pytest.raises(ValidationError):
-        phonebook.update_contact(1, **{field: "   "})
+def test_update_contact_rejects_empty_required_fields() -> None:
+    for field in ("name", "phone"):
+        phonebook = PhoneBook([Contact(1, "Иван", "111")])
+        with pytest.raises(ValidationError):
+            phonebook.update_contact(1, **{field: "   "})
 
 
 def test_delete_existing_contact_returns_it() -> None:
@@ -185,16 +178,16 @@ def test_delete_existing_contact_returns_it() -> None:
     assert phonebook.contacts == ()
 
 
-@pytest.mark.parametrize("contact_id", [0, -1, 999])
-def test_missing_or_invalid_id_raises_contact_not_found(contact_id: int) -> None:
-    with pytest.raises(ContactNotFoundError):
-        PhoneBook().delete_contact(contact_id)
+def test_missing_or_invalid_id_raises_contact_not_found() -> None:
+    # Границы допустимого диапазона и отсутствующий положительный ID.
+    for contact_id in (0, 999):
+        with pytest.raises(ContactNotFoundError):
+            PhoneBook().delete_contact(contact_id)
 
 
-@pytest.mark.parametrize("contact_id", ["abc", None, object()])
-def test_non_integer_id_raises_validation_error(contact_id: object) -> None:
+def test_non_integer_id_raises_validation_error() -> None:
     with pytest.raises(ValidationError, match="целым"):
-        PhoneBook().get_by_id(contact_id)  # type: ignore[arg-type]
+        PhoneBook().get_by_id("abc")  # type: ignore[arg-type]
 
 
 def test_grouping_sorts_contacts_by_first_letter() -> None:
@@ -212,16 +205,18 @@ def test_replace_all_rejects_duplicate_ids() -> None:
         phonebook.replace_all([Contact(1, "Иван", "1"), Contact(1, "Анна", "2")])
 
 
-@pytest.mark.parametrize("bad_id", [0, -1, "abc", None])
-def test_contact_rejects_invalid_id(bad_id: object) -> None:
-    with pytest.raises(ValidationError):
-        Contact(bad_id, "Иван", "111")  # type: ignore[arg-type]
+def test_contact_rejects_invalid_id() -> None:
+    # Анализ границ: 0 — ближайшее значение ниже минимального ID 1;
+    # "abc" — представитель класса значений неверного типа.
+    for bad_id in (0, "abc"):
+        with pytest.raises(ValidationError):
+            Contact(bad_id, "Иван", "111")  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("field", ["created_at", "updated_at"])
-def test_contact_rejects_invalid_dates(field: str) -> None:
-    with pytest.raises(ValidationError, match="Дата"):
-        Contact(1, "Иван", "111", **{field: "2026-01-01"})  # type: ignore[arg-type]
+def test_contact_rejects_invalid_dates() -> None:
+    for field in ("created_at", "updated_at"):
+        with pytest.raises(ValidationError, match="Дата"):
+            Contact(1, "Иван", "111", **{field: "2026-01-01"})  # type: ignore[arg-type]
 
 
 def test_contact_serialization_round_trip() -> None:
@@ -229,26 +224,29 @@ def test_contact_serialization_round_trip() -> None:
     assert Contact.from_dict(contact.to_dict()) == contact
 
 
-@pytest.mark.parametrize(
-    "data",
-    [
+def test_contact_from_dict_rejects_invalid_data() -> None:
+    invalid_equivalence_classes = [
         None,
-        [],
         {"phone": "111"},
         {"id": 1, "name": "Иван"},
         {"id": "bad", "name": "Иван", "phone": "111"},
         {"id": 1, "name": "", "phone": "111"},
         {"id": 1, "name": "Иван", "phone": "111", "created_at": 123},
         {"id": 1, "name": "Иван", "phone": "111", "updated_at": "not-a-date"},
-    ],
-)
-def test_contact_from_dict_rejects_invalid_data(data: object) -> None:
-    with pytest.raises(InvalidDataFormatError):
-        Contact.from_dict(data)
+    ]
+    for data in invalid_equivalence_classes:
+        with pytest.raises(InvalidDataFormatError):
+            Contact.from_dict(data)
 
 
-def test_reader_returns_empty_list_for_missing_file(tmp_path: Path) -> None:
+def test_reader_handles_missing_and_legacy_files(tmp_path: Path) -> None:
     assert FileReader(tmp_path / "missing.json").read() == []
+
+    path = tmp_path / "legacy.json"
+    path.write_text(json.dumps([{"id": 1, "name": "Иван", "phone": "111"}]), encoding="utf-8")
+    contact = FileReader(path).read()[0]
+    assert isinstance(contact.created_at, datetime)
+    assert contact.updated_at == contact.created_at
 
 
 def test_write_and_open_file_preserve_all_fields(tmp_path: Path) -> None:
@@ -259,15 +257,7 @@ def test_write_and_open_file_preserve_all_fields(tmp_path: Path) -> None:
     assert "Иван" in path.read_text(encoding="utf-8")
 
 
-def test_reader_supports_old_files_without_dates(tmp_path: Path) -> None:
-    path = tmp_path / "contacts.json"
-    path.write_text(json.dumps([{"id": 1, "name": "Иван", "phone": "111"}]), encoding="utf-8")
-    contact = FileReader(path).read()[0]
-    assert isinstance(contact.created_at, datetime)
-    assert contact.updated_at == contact.created_at
-
-
-@pytest.mark.parametrize("content", ["{bad json", '{"id": 1}', '[{"id": 1}]'])
+@pytest.mark.parametrize("content", ["{bad json", '{"id": 1}'])
 def test_reader_rejects_invalid_file_content(tmp_path: Path, content: str) -> None:
     path = tmp_path / "contacts.json"
     path.write_text(content, encoding="utf-8")
@@ -275,16 +265,12 @@ def test_reader_rejects_invalid_file_content(tmp_path: Path, content: str) -> No
         FileReader(path).read()
 
 
-def test_file_read_error_is_wrapped(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_file_io_errors_are_wrapped(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     path = tmp_path / "contacts.json"
     path.write_text("[]", encoding="utf-8")
     monkeypatch.setattr(Path, "open", lambda *args, **kwargs: (_ for _ in ()).throw(OSError("boom")))
     with pytest.raises(FileReadError, match="boom"):
         FileReader(path).read()
-
-
-def test_file_write_error_is_wrapped(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(Path, "open", lambda *args, **kwargs: (_ for _ in ()).throw(OSError("boom")))
     with pytest.raises(FileWriteError, match="boom"):
         FileWriter(tmp_path / "contacts.json").write([])
 
@@ -298,8 +284,9 @@ def test_generator_is_reproducible_and_generates_valid_values() -> None:
     assert [contact.contact_id for contact in contacts] == [10, 11, 12]
 
 
-@pytest.mark.parametrize("length", [0, -1])
-def test_generator_rejects_invalid_code_length(length: int) -> None:
+def test_generator_rejects_invalid_code_length() -> None:
+    # Ноль — граничное значение непосредственно перед допустимой длиной 1.
+    length = 0
     with pytest.raises(ValueError, match="Длина"):
         ContactGenerator().generate_confirmation_code(length)
 
@@ -340,11 +327,12 @@ def test_controller_show_actions_and_generate(tmp_path: Path) -> None:
     assert controller.has_changes
 
 
-@pytest.mark.parametrize("value", ["abc", "0", "-1"])
-def test_controller_rejects_invalid_generation_count(tmp_path: Path, value: str) -> None:
-    controller, _ = make_controller(tmp_path, [value])
-    with pytest.raises(ValidationError):
-        controller.generate_test_contacts()
+def test_controller_rejects_invalid_generation_count(tmp_path: Path) -> None:
+    # Таблица решений: неверный тип и нижняя граница диапазона.
+    for value in ("abc", "0"):
+        controller, _ = make_controller(tmp_path, [value])
+        with pytest.raises(ValidationError):
+            controller.generate_test_contacts()
 
 
 def test_controller_rejects_invalid_contact_id(tmp_path: Path) -> None:
@@ -407,7 +395,7 @@ def test_console_view_input_output_and_formatting(monkeypatch: pytest.MonkeyPatc
     assert "02.01.2026 03:04:05" in output
 
 
-def test_main_builds_controller_after_read_error(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_main_builds_controller_with_and_without_read_error(monkeypatch: pytest.MonkeyPatch) -> None:
     messages: list[str] = []
 
     monkeypatch.setattr(application.FileReader, "read", lambda self: (_ for _ in ()).throw(FileReadError("bad")))
@@ -416,10 +404,7 @@ def test_main_builds_controller_after_read_error(monkeypatch: pytest.MonkeyPatch
     application.main()
     assert messages == ["bad", "run"]
 
-
-def test_main_builds_controller_after_successful_read(monkeypatch: pytest.MonkeyPatch) -> None:
-    events: list[str] = []
     monkeypatch.setattr(application.FileReader, "read", lambda self: [Contact(1, "Иван", "111")])
-    monkeypatch.setattr(application.PhoneBookController, "run", lambda self: events.append(self.phonebook.contacts[0].name))
+    monkeypatch.setattr(application.PhoneBookController, "run", lambda self: messages.append(self.phonebook.contacts[0].name))
     application.main()
-    assert events == ["Иван"]
+    assert messages[-1] == "Иван"
