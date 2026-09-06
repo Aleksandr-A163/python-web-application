@@ -3,5 +3,36 @@
 {% block title %}О проекте — Телефонный справочник{% endblock %}
 
 {% block content %}
-  <h1>О проекте</h1>
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <h1 class="display-6 fw-bold mb-4">О проекте</h1>
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 p-md-5">
+          <h2 class="h4">О сайте</h2>
+          <p class="text-muted">
+            «Телефонный справочник» — учебное веб-приложение для работы с
+            контактами. Оно развивает существующий консольный проект, добавляя
+            HTML-интерфейс и JSON API без дублирования предметной логики.
+          </p>
+
+          <h2 class="h4 mt-4">Технологии</h2>
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <span class="badge bg-primary">Python</span>
+            <span class="badge bg-success">FastAPI</span>
+            <span class="badge bg-warning text-dark">Jinja2</span>
+            <span class="badge bg-info text-dark">Bootstrap 5</span>
+          </div>
+
+          <h2 class="h4">Разработчик</h2>
+          <p class="mb-2">Александр — автор и разработчик проекта.</p>
+          <a
+            class="btn btn-outline-primary"
+            href="https://github.com/Aleksandr-A163/python-web-application"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Репозиторий на GitHub</a>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

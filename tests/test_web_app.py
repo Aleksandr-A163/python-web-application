@@ -23,6 +23,42 @@ def test_pages_are_registered_and_render_templates(tmp_path: Path) -> None:
     assert "О проекте" in about_response.text
 
 
+def test_pages_share_bootstrap_navigation(tmp_path: Path) -> None:
+    client = TestClient(create_app(data_path=tmp_path / "contacts.json"))
+
+    index_html = client.get("/").text
+    about_html = client.get("/about/").text
+
+    for html in (index_html, about_html):
+        assert "bootstrap@5.0.2/dist/css/bootstrap.min.css" in html
+        assert "bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" in html
+        assert '<nav class="navbar navbar-expand-lg' in html
+        assert 'href="http://testserver/"' in html
+        assert 'href="http://testserver/about/"' in html
+        assert "navbar-toggler" in html
+
+    assert (
+        'class="nav-link active" href="http://testserver/" aria-current="page"'
+        in " ".join(index_html.split())
+    )
+    assert (
+        'class="nav-link active" href="http://testserver/about/" '
+        'aria-current="page"'
+        in " ".join(about_html.split())
+    )
+
+
+def test_about_page_describes_site_and_developer(tmp_path: Path) -> None:
+    client = TestClient(create_app(data_path=tmp_path / "contacts.json"))
+
+    html = client.get("/about/").text
+
+    assert "О сайте" in html
+    assert "Разработчик" in html
+    assert "Александр" in html
+    assert "python-web-application" in html
+
+
 def test_application_loads_contacts_from_configured_file(tmp_path: Path) -> None:
     data_path = tmp_path / "contacts.json"
     data_path.write_text(

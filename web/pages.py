@@ -17,11 +17,19 @@ templates = Jinja2Templates(
 def index(request: Request) -> HTMLResponse:
     """Показывает главную страницу телефонного справочника."""
 
-    return templates.TemplateResponse(request=request, name="index.html")
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"active_page": "index"},
+    )
 
 
 @router.get("/about/", response_class=HTMLResponse, name="about")
 def about(request: Request) -> HTMLResponse:
     """Показывает информацию о проекте."""
 
-    return templates.TemplateResponse(request=request, name="about.html")
+    return templates.TemplateResponse(
+        request=request,
+        name="about.html",
+        context={"active_page": "about"},
+    )

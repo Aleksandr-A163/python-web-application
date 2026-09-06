@@ -3,5 +3,27 @@
 {% block title %}Главная — Телефонный справочник{% endblock %}
 
 {% block content %}
-  <h1>Телефонный справочник</h1>
+  <section class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <span class="badge bg-primary mb-3">FastAPI + Jinja2</span>
+      <h1 class="display-5 fw-bold mb-3">Телефонный справочник</h1>
+      <p class="lead text-muted mb-4">
+        Учебное приложение для хранения и просмотра контактов с консольным
+        интерфейсом, HTML-страницами и JSON API.
+      </p>
+      <a class="btn btn-primary btn-lg" href="/docs">Открыть API-документацию</a>
+    </div>
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="h4 card-title">Возможности проекта</h2>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item px-0">Управление телефонными контактами</li>
+            <li class="list-group-item px-0">Веб-интерфейс на FastAPI</li>
+            <li class="list-group-item px-0">Документированный JSON API</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
 {% endblock %}
