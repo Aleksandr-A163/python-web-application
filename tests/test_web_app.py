@@ -38,6 +38,7 @@ def test_pages_share_bootstrap_navigation(tmp_path: Path) -> None:
         assert "navbar-toggler" in html
         assert "styles.css" in html
         assert "app.js" in html
+        assert 'href="http://testserver/static/favicon.svg"' in html
 
     normalized_html = " ".join(index_html.split())
     assert 'class="nav-link" href="http://testserver/">Главная</a>' in normalized_html
@@ -64,6 +65,7 @@ def test_home_page_exposes_interactive_contact_browser(tmp_path: Path) -> None:
     html = client.get("/").text
     styles_response = client.get("/static/styles.css")
     contacts_script_response = client.get("/static/contacts.js")
+    favicon_response = client.get("/static/favicon.svg")
 
     assert 'id="contactSearch"' in html
     assert 'id="contactList"' in html
@@ -73,6 +75,8 @@ def test_home_page_exposes_interactive_contact_browser(tmp_path: Path) -> None:
     assert "text/css" in styles_response.headers["content-type"]
     assert contacts_script_response.status_code == 200
     assert 'fetch("/api/contacts/")' in contacts_script_response.text
+    assert favicon_response.status_code == 200
+    assert favicon_response.headers["content-type"].startswith("image/svg+xml")
 
 
 def test_application_loads_contacts_from_configured_file(tmp_path: Path) -> None:
