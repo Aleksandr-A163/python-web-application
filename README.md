@@ -126,12 +126,14 @@ python-phonebook-tests/
 │   ├── test_phonebook.py   # CRUD, поиск, кэш и группировка
 │   ├── test_storage.py     # чтение и запись JSON
 │   └── test_view.py        # консольное представление
-├── controller.py           # контроллер приложения
-├── exceptions.py           # пользовательские исключения
-├── generator.py            # генератор тестовых контактов
-├── main.py                 # точка входа
-├── model.py                # контакты, справочник и файловый слой
-├── view.py                 # консольное представление
+├── phonebook/
+│   ├── cli/                # сборка, контроллер и представление CLI
+│   ├── web/                # FastAPI, роутеры, схемы и шаблоны
+│   ├── exceptions.py       # доменные исключения
+│   ├── generator.py        # генератор тестовых контактов
+│   └── model.py            # контакты, справочник и файловый слой
+├── app.py                  # ASGI-точка входа веб-приложения
+├── main.py                 # точка запуска CLI
 ├── pyproject.toml          # настройки pytest
 └── requirements-dev.txt    # pytest и pytest-cov
 ```
@@ -155,12 +157,7 @@ python -m pytest -v
 
 ```bash
 python -m pytest \
-  --cov=controller \
-  --cov=exceptions \
-  --cov=generator \
-  --cov=main \
-  --cov=model \
-  --cov=view \
+  --cov=phonebook \
   --cov-report=term-missing \
   --cov-fail-under=100
 ```

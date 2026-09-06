@@ -5,7 +5,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from app import create_app
+from phonebook.web.application import create_app
 
 
 def test_pages_are_registered_and_render_templates(tmp_path: Path) -> None:

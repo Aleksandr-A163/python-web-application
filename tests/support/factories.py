@@ -6,9 +6,9 @@ from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
-from controller import PhoneBookController
-from generator import ContactGenerator
-from model import Contact, FileReader, FileWriter, PhoneBook
+from phonebook.cli.controller import PhoneBookController
+from phonebook.generator import ContactGenerator
+from phonebook.model import Contact, FileReader, FileWriter, PhoneBook
 from tests.support.doubles import StubView
 
 ControllerFactory = Callable[

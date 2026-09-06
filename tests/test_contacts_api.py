@@ -6,9 +6,9 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from app import create_app
-from exceptions import FileWriteError
-from model import Contact, PhoneBook
+from phonebook.exceptions import FileWriteError
+from phonebook.model import Contact, PhoneBook
+from phonebook.web.application import create_app
 
 
 def make_client(tmp_path: Path, phonebook: PhoneBook | None = None) -> TestClient:

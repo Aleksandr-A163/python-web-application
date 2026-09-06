@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from controller import PhoneBookController
-from model import PhoneBook
+from phonebook.cli.controller import PhoneBookController
+from phonebook.model import PhoneBook
 from tests.support.doubles import StubView
 from tests.support.factories import ControllerFactory, make_controller
 

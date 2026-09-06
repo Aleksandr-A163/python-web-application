@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from exceptions import FileReadError, FileWriteError, InvalidDataFormatError
-from model import FileReader, FileWriter
+from phonebook.exceptions import FileReadError, FileWriteError, InvalidDataFormatError
+from phonebook.model import FileReader, FileWriter
 from tests.support.factories import make_contact
 
 

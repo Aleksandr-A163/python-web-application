@@ -11,7 +11,7 @@ from itertools import groupby
 from pathlib import Path
 from typing import NamedTuple, TypeAlias
 
-from exceptions import (
+from phonebook.exceptions import (
     ContactNotFoundError,
     FileReadError,
     FileWriteError,

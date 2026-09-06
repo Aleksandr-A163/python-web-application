@@ -2,10 +2,10 @@
 
 from collections.abc import Callable
 
-from exceptions import PhoneBookError, ValidationError
-from generator import ContactGenerator
-from model import FileReader, FileWriter, PhoneBook
-from view import ConsoleView
+from phonebook.cli.view import ConsoleView
+from phonebook.exceptions import PhoneBookError, ValidationError
+from phonebook.generator import ContactGenerator
+from phonebook.model import FileReader, FileWriter, PhoneBook
 
 
 class PhoneBookController:

@@ -2,7 +2,7 @@
 
 import pytest
 
-from exceptions import FileWriteError, ValidationError
+from phonebook.exceptions import FileWriteError, ValidationError
 from tests.support.factories import ControllerFactory
 
 

@@ -3,7 +3,7 @@
 from collections.abc import Iterable, Mapping
 from datetime import datetime
 
-from model import Contact
+from phonebook.model import Contact
 
 
 class ConsoleView:

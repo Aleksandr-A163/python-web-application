@@ -1,28 +1,6 @@
-"""Точка входа в приложение."""
+"""Совместимая точка запуска консольного приложения."""
 
-from controller import PhoneBookController
-from exceptions import PhoneBookError
-from model import FileReader, FileWriter, PhoneBook
-from view import ConsoleView
-
-
-def main() -> None:
-    file_path = "contacts.json"
-    view = ConsoleView()
-    reader = FileReader(file_path)
-    try:
-        phonebook = PhoneBook(reader.read())
-    except PhoneBookError as error:
-        view.show_error(str(error))
-        phonebook = PhoneBook()
-
-    controller = PhoneBookController(
-        phonebook=phonebook,
-        reader=reader,
-        writer=FileWriter(file_path),
-        view=view,
-    )
-    controller.run()
+from phonebook.cli.application import main
 
 
 if __name__ == "__main__":  # pragma: no cover - запуск из командной строки

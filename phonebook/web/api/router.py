@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from api.contacts import router as contacts_router
+from phonebook.web.api.contacts import router as contacts_router
 
 
 router = APIRouter(prefix="/api")

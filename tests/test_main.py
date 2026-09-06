@@ -2,8 +2,8 @@
 
 import pytest
 
-import main as application
-from exceptions import FileReadError
+import phonebook.cli.application as application
+from phonebook.exceptions import FileReadError
 from tests.support.factories import make_contact
 
 

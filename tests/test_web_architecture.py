@@ -2,11 +2,11 @@
 
 from fastapi import APIRouter, FastAPI
 
-from api.contacts import router as contacts_router
-from api.router import router as api_router
 from app import app, create_app
-from model import FileWriter, PhoneBook
-from web.pages import router as pages_router
+from phonebook.model import FileWriter, PhoneBook
+from phonebook.web.api.contacts import router as contacts_router
+from phonebook.web.api.router import router as api_router
+from phonebook.web.pages import router as pages_router
 
 
 def test_web_application_factory_builds_isolated_application() -> None:

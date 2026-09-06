@@ -4,8 +4,12 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from exceptions import ContactNotFoundError, InvalidDataFormatError, ValidationError
-from model import PhoneBook
+from phonebook.exceptions import (
+    ContactNotFoundError,
+    InvalidDataFormatError,
+    ValidationError,
+)
+from phonebook.model import PhoneBook
 from tests.support.doubles import SequenceClock
 from tests.support.factories import make_contact
 

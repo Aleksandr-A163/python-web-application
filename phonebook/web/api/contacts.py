@@ -4,10 +4,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 
-from exceptions import ContactNotFoundError, FileWriteError, ValidationError
-from model import PhoneBook
-from schemas.contacts import ContactCreate, ContactResponse
-from web.dependencies import ContactWriter, get_phonebook, get_writer
+from phonebook.exceptions import ContactNotFoundError, FileWriteError
+from phonebook.model import PhoneBook
+from phonebook.web.dependencies import ContactWriter, get_phonebook, get_writer
+from phonebook.web.schemas.contacts import ContactCreate, ContactResponse
 
 
 router = APIRouter(prefix="/contacts", tags=["contacts"])
@@ -53,17 +53,11 @@ def create_contact(
 ) -> ContactResponse:
     """Создаёт контакт и сохраняет актуальное состояние справочника."""
 
-    try:
-        contact = phonebook.add_contact(
-            name=payload.name,
-            phone=payload.phone,
-            comment=payload.comment,
-        )
-    except ValidationError as error:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(error),
-        ) from error
+    contact = phonebook.add_contact(
+        name=payload.name,
+        phone=payload.phone,
+        comment=payload.comment,
+    )
 
     try:
         writer.write(phonebook.contacts)

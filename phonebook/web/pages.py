@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 
 router = APIRouter(include_in_schema=False)
 templates = Jinja2Templates(
-    directory=Path(__file__).resolve().parent.parent / "templates",
+    directory=Path(__file__).resolve().parent / "templates",
 )
 
 

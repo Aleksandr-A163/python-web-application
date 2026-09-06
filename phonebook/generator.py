@@ -2,7 +2,7 @@
 
 import random
 
-from model import Contact
+from phonebook.model import Contact
 
 
 class ContactGenerator:

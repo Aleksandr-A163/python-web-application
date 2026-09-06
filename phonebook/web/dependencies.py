@@ -5,7 +5,7 @@ from typing import Protocol
 
 from fastapi import Request
 
-from model import Contact, PhoneBook
+from phonebook.model import Contact, PhoneBook
 
 
 class ContactWriter(Protocol):

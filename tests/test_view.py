@@ -5,7 +5,7 @@ from datetime import datetime
 import pytest
 
 from tests.support.factories import make_contact
-from view import ConsoleView
+from phonebook.cli.view import ConsoleView
 
 
 def test_console_view_input_output_and_formatting(

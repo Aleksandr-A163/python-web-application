@@ -2,7 +2,7 @@
 
 import pytest
 
-from generator import ContactGenerator
+from phonebook.generator import ContactGenerator
 
 
 def test_generator_is_reproducible_and_generates_valid_values() -> None:

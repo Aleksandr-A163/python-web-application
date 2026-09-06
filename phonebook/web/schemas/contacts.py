@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
-from model import Contact
+from phonebook.model import Contact
 
 
 class ContactCreate(BaseModel):

@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator, Mapping
 from datetime import datetime
 
-from model import Contact
+from phonebook.model import Contact
 
 
 class SequenceClock:

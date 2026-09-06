@@ -12,24 +12,25 @@
 ## Границы компонентов
 
 ```text
-CLI (main.py, controller.py, view.py)
+CLI (main.py, phonebook/cli/)
                     \
-                     -> PhoneBook, Contact (model.py)
+                     -> PhoneBook, Contact (phonebook/model.py)
                     /
-Web (app.py, web/, api/, schemas/)
+Web (app.py, phonebook/web/)
 
-FileReader, FileWriter (model.py) -> contacts.json
+FileReader, FileWriter (phonebook/model.py) -> contacts.json
 ```
 
-- `model.py` содержит сущность `Contact`, коллекцию `PhoneBook` и операции над
+- `phonebook/model.py` содержит сущность `Contact`, коллекцию `PhoneBook` и операции над
   контактами. Доменный код не зависит от FastAPI, Jinja2 или консольного ввода.
 - `main.py` остаётся точкой сборки и запуска консольного приложения.
 - `app.py` станет точкой сборки ASGI-приложения и будет подключать HTTP-роутеры.
-- `web/` будет содержать только HTML-представления.
-- `api/` будет содержать JSON API и вложенный роутер контактов.
-- `schemas/` будет содержать Pydantic-схемы HTTP-контрактов. Эти схемы не
+- `phonebook/cli/` содержит сборку, контроллер и представление CLI.
+- `phonebook/web/` содержит сборку и HTML-представления FastAPI.
+- `phonebook/web/api/` содержит JSON API и вложенный роутер контактов.
+- `phonebook/web/schemas/` содержит Pydantic-схемы HTTP-контрактов. Эти схемы не
   заменяют доменную сущность `Contact`.
-- `templates/` будет содержать базовый и дочерние Jinja2-шаблоны.
+- `phonebook/web/templates/` содержит базовый и дочерние Jinja2-шаблоны.
 
 ## Направление зависимостей
 
@@ -41,8 +42,8 @@ FastAPI / CLI -> PhoneBook -> Contact
 FastAPI / CLI -> FileReader / FileWriter
 ```
 
-Модули `model.py`, `exceptions.py` и `generator.py` не должны импортировать
-модули `api`, `web`, `schemas`, FastAPI или Jinja2.
+Модули `phonebook/model.py`, `phonebook/exceptions.py` и
+`phonebook/generator.py` не должны импортировать веб-модули, FastAPI или Jinja2.
 
 ## Сборка приложений
 
@@ -87,29 +88,27 @@ HTTP-исключения не используются внутри `model.py`.
 python-web-application/
 ├── app.py
 ├── main.py
-├── model.py
-├── controller.py
-├── view.py
-├── web/
+├── phonebook/
 │   ├── __init__.py
-│   ├── dependencies.py
-│   └── pages.py
-├── api/
-│   ├── __init__.py
-│   ├── router.py
-│   └── contacts.py
-├── schemas/
-│   ├── __init__.py
-│   └── contacts.py
-├── templates/
-│   ├── base.html
-│   ├── index.html
-│   └── about.html
+│   ├── exceptions.py
+│   ├── generator.py
+│   ├── model.py
+│   ├── cli/
+│   │   ├── application.py
+│   │   ├── controller.py
+│   │   └── view.py
+│   └── web/
+│       ├── application.py
+│       ├── dependencies.py
+│       ├── pages.py
+│       ├── api/
+│       ├── schemas/
+│       └── templates/
 └── tests/
 ```
 
-Каталог `web/` выбран вместо `views/`, чтобы не конфликтовать с существующим
-модулем `view.py`, отвечающим за консольный интерфейс.
+Корневые `main.py` и `app.py` являются стабильными точками запуска, а реализация
+скомпонована внутри пакета `phonebook`.
 
 ## Архитектурные ограничения первого релиза
 

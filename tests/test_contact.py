@@ -4,8 +4,8 @@ from datetime import datetime
 
 import pytest
 
-from exceptions import InvalidDataFormatError, ValidationError
-from model import Contact
+from phonebook.exceptions import InvalidDataFormatError, ValidationError
+from phonebook.model import Contact
 from tests.support.factories import make_contact
 
 
