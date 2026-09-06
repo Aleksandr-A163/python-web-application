@@ -6,12 +6,13 @@ from fastapi import FastAPI
 
 from api.router import router as api_router
 from model import FileReader, FileWriter, PhoneBook
+from web.dependencies import ContactWriter
 from web.pages import router as pages_router
 
 
 def create_app(
     phonebook: PhoneBook | None = None,
-    writer: FileWriter | None = None,
+    writer: ContactWriter | None = None,
     data_path: str | Path = "contacts.json",
 ) -> FastAPI:
     """Создаёт изолированный экземпляр FastAPI-приложения."""
