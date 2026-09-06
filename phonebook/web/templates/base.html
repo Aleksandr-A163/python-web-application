@@ -36,20 +36,12 @@
         </button>
         <div class="collapse navbar-collapse" id="mainNavigation">
           <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-            <li class="nav-item">
-              <a
-                class="nav-link{% if active_page == 'index' %} active{% endif %}"
-                href="{{ url_for('index') }}"
-                {% if active_page == 'index' %}aria-current="page"{% endif %}
-              >Главная</a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link{% if active_page == 'about' %} active{% endif %}"
-                href="{{ url_for('about') }}"
-                {% if active_page == 'about' %}aria-current="page"{% endif %}
-              >О проекте</a>
-            </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ url_for('index') }}">Главная</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ url_for('about') }}">О проекте</a>
+                </li>
             <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
               <button
                 class="btn theme-toggle"
@@ -98,8 +90,8 @@
       </div>
       <div class="footer-bottom">
         <div class="container d-flex flex-column flex-sm-row justify-content-between gap-2 py-3">
-          <small>© 2026 Александр</small>
-          <small>Сделано с вниманием к деталям</small>
+          <small>Разработчик:  Аносов Александр</small>
+          <small>© 2026</small>
         </div>
       </div>
     </footer>
@@ -109,6 +101,7 @@
       integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
       crossorigin="anonymous"
     ></script>
+    <!--suppress HtmlUnknownTarget -->
     <script src="{{ url_for('static', path='/app.js') }}"></script>
     {% block scripts %}{% endblock %}
   </body>

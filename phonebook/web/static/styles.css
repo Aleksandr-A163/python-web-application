@@ -37,7 +37,7 @@ body { background: var(--surface-soft); color: var(--ink); transition: backgroun
 .eyebrow span { background: var(--accent); border-radius: 50%; display: inline-block; height: 7px; margin-right: .45rem; width: 7px; }
 .hero-title { font-size: clamp(2.7rem, 6vw, 4.8rem); font-weight: 750; letter-spacing: -.045em; line-height: .98; }
 .hero-title span { color: var(--accent); }
-.hero-lead { color: #b9c6df; font-size: 1.2rem; max-width: 610px; }
+.hero-lead { color: #b9c6df; font-size: 1.2rem; max-width: 580px; }
 .btn-accent { background: var(--accent); border-color: var(--accent); color: var(--navy); font-weight: 700; }
 .btn-accent:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; transform: translateY(-1px); }
 .hero-panel { background: rgba(255,255,255,.98); border: 1px solid rgba(255,255,255,.18); border-radius: 18px; box-shadow: 0 28px 80px rgba(0,0,0,.28); color: #17213b; padding: 1.4rem; transform: rotate(1.2deg); }
