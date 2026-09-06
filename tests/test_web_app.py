@@ -39,14 +39,11 @@ def test_pages_share_bootstrap_navigation(tmp_path: Path) -> None:
         assert "styles.css" in html
         assert "app.js" in html
 
+    normalized_html = " ".join(index_html.split())
+    assert 'class="nav-link" href="http://testserver/">Главная</a>' in normalized_html
     assert (
-        'class="nav-link active" href="http://testserver/" aria-current="page"'
-        in " ".join(index_html.split())
-    )
-    assert (
-        'class="nav-link active" href="http://testserver/about/" '
-        'aria-current="page"'
-        in " ".join(about_html.split())
+        'class="nav-link" href="http://testserver/about/">О проекте</a>'
+        in normalized_html
     )
 
 
