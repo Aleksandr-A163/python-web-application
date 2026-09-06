@@ -9,13 +9,19 @@
       integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
       crossorigin="anonymous"
     >
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
     <title>{% block title %}Телефонный справочник{% endblock %}</title>
   </head>
-  <body class="d-flex flex-column min-vh-100 bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <body class="d-flex flex-column min-vh-100">
+    <header class="site-header sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark py-3" aria-label="Основная навигация">
       <div class="container">
-        <a class="navbar-brand fw-semibold" href="{{ url_for('index') }}">
-          Телефонный справочник
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('index') }}">
+          <span class="brand-mark" aria-hidden="true">☎</span>
+          <span>
+            <strong class="d-block brand-title">Контакты</strong>
+            <small class="d-block brand-subtitle">единый адресный центр</small>
+          </span>
         </a>
         <button
           class="navbar-toggler"
@@ -29,7 +35,7 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="mainNavigation">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
             <li class="nav-item">
               <a
                 class="nav-link{% if active_page == 'index' %} active{% endif %}"
@@ -44,18 +50,57 @@
                 {% if active_page == 'about' %}aria-current="page"{% endif %}
               >О проекте</a>
             </li>
+            <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+              <button
+                class="btn theme-toggle"
+                id="themeToggle"
+                type="button"
+                aria-label="Переключить цветовую тему"
+                title="Переключить цветовую тему"
+              ><span aria-hidden="true">◐</span></button>
+            </li>
           </ul>
         </div>
       </div>
     </nav>
+    </header>
 
-    <main class="container py-5 flex-grow-1">
+    <main class="flex-grow-1">
       {% block content %}{% endblock %}
     </main>
 
-    <footer class="border-top bg-white py-3">
-      <div class="container text-center text-muted small">
-        Учебное веб-приложение на FastAPI
+    <footer class="site-footer mt-auto">
+      <div class="container py-5">
+        <div class="row g-4 align-items-start">
+          <div class="col-lg-5">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <span class="brand-mark brand-mark-small" aria-hidden="true">☎</span>
+              <strong class="h5 mb-0 text-white">Телефонный справочник</strong>
+            </div>
+            <p class="footer-copy mb-0">
+              Учебное приложение с общей предметной моделью для CLI,
+              HTML-интерфейса и JSON API.
+            </p>
+          </div>
+          <div class="col-6 col-lg-3 offset-lg-1">
+            <h2 class="footer-heading">Навигация</h2>
+            <ul class="list-unstyled footer-links mb-0">
+              <li><a href="{{ url_for('index') }}">Главная</a></li>
+              <li><a href="{{ url_for('about') }}">О проекте</a></li>
+              <li><a href="/docs">Swagger API</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg-3">
+            <h2 class="footer-heading">Технологии</h2>
+            <p class="footer-copy mb-0">Python · FastAPI<br>Jinja2 · Bootstrap 5</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="container d-flex flex-column flex-sm-row justify-content-between gap-2 py-3">
+          <small>© 2026 Александр</small>
+          <small>Сделано с вниманием к деталям</small>
+        </div>
       </div>
     </footer>
 
@@ -64,5 +109,7 @@
       integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
       crossorigin="anonymous"
     ></script>
+    <script src="{{ url_for('static', path='/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
   </body>
 </html>

@@ -36,6 +36,8 @@ def test_pages_share_bootstrap_navigation(tmp_path: Path) -> None:
         assert 'href="http://testserver/"' in html
         assert 'href="http://testserver/about/"' in html
         assert "navbar-toggler" in html
+        assert "styles.css" in html
+        assert "app.js" in html
 
     assert (
         'class="nav-link active" href="http://testserver/" aria-current="page"'
@@ -57,6 +59,23 @@ def test_about_page_describes_site_and_developer(tmp_path: Path) -> None:
     assert "Разработчик" in html
     assert "Александр" in html
     assert "python-web-application" in html
+
+
+def test_home_page_exposes_interactive_contact_browser(tmp_path: Path) -> None:
+    client = TestClient(create_app(data_path=tmp_path / "contacts.json"))
+
+    html = client.get("/").text
+    styles_response = client.get("/static/styles.css")
+    contacts_script_response = client.get("/static/contacts.js")
+
+    assert 'id="contactSearch"' in html
+    assert 'id="contactList"' in html
+    assert 'id="refreshContacts"' in html
+    assert "contacts.js" in html
+    assert styles_response.status_code == 200
+    assert "text/css" in styles_response.headers["content-type"]
+    assert contacts_script_response.status_code == 200
+    assert 'fetch("/api/contacts/")' in contacts_script_response.text
 
 
 def test_application_loads_contacts_from_configured_file(tmp_path: Path) -> None:
