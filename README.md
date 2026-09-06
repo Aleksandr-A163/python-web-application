@@ -107,7 +107,8 @@
 будет дополнен HTML-представлениями и JSON API на FastAPI. Оба интерфейса будут
 использовать общую предметную модель телефонного справочника. Принятые границы
 компонентов и направление зависимостей описаны в
-[`docs/architecture.md`](docs/architecture.md).
+[`docs/architecture.md`](docs/architecture.md), а публичные маршруты и форматы
+данных — в [`docs/http-contracts.md`](docs/http-contracts.md).
 
 ## Структура проекта
 
